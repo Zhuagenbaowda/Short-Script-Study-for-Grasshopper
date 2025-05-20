@@ -1,0 +1,8 @@
+ghDoc = ghenv.Component.OnPingDocument()
+objs = ghDoc.Objects
+for obj in objs:
+    if obj.NickName == 'G1':
+        obj.Count=count
+        obj.ExpireSolution(True)
+        obj.Randomize(True)
+        a = obj
