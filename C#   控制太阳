@@ -1,0 +1,54 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+using Rhino.Render;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	int year,
+	int month,
+	int day,
+	int hour,
+	int minute,
+	int second,
+	string timetype,
+	double latitude,
+	double longitude,
+	bool is_on)
+    {
+        if(is_on)
+        {
+         DateTime date1 = new DateTime(year, month, day, hour, minute, second);
+
+         DateTimeKind dtk1 = DateTimeKind.Unspecified;
+         if(timetype == "local")
+         {
+             dtk1 = DateTimeKind.Local;
+         }
+         else if (timetype == "utc")
+         {
+             dtk1 = DateTimeKind.Utc;
+         }
+         
+         Rhino.Render.Sun sun1 = Rhino.RhinoDoc.ActiveDoc.Lights.Sun;
+         sun1.Latitude = latitude;
+         sun1.Longitude = longitude;
+
+         sun1.SetDateTime(date1,dtk1);
+        }
+    }
+}
