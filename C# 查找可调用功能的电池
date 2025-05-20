@@ -1,0 +1,25 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(ref object a)
+    {
+        var qwe = Rhino.NodeInCode.Components.NodeInCodeFunctions.GetDynamicMemberNames();
+        a = qwe;
+    }
+}
