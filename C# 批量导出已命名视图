@@ -1,0 +1,49 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	bool getnames,
+	bool getviews,
+	string filepath,
+	string filetype)
+    {
+     List<String> namedview_list = new List<String>();
+     
+     if(getnames)
+     {
+         RhinoDoc activeDoc = RhinoDoc.ActiveDoc;
+         var viewTableList = activeDoc.NamedViews;
+         
+         for(int i = 0;i < viewTableList.Count;i++)
+         {
+         namedview_list.Add(viewTableList[i].Name);
+         }
+     }
+
+     if(getviews)
+     {
+         foreach(string viewname in namedview_list)
+         { 
+             string view_filename = filepath + "\\" + viewname + filetype;
+             Rhino.RhinoApp.RunScript(String.Format("-NamedView {0} enterend",viewname), true);
+             Rhino.RhinoApp.RunScript(String.Format("-ViewCaptureToFile {0}", view_filename), true);
+         }
+     }
+    }
+}
