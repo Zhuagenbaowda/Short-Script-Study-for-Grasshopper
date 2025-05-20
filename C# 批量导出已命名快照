@@ -1,0 +1,47 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	bool getnames,
+	bool getsnapshots,
+	string filepath,
+	string filetype)
+    {
+     string[] snapshotsnames_collection = null;
+     string snapshots_filename = "";
+     
+     if(getnames)
+     {
+         RhinoDoc activeDoc = RhinoDoc.ActiveDoc;
+         var snapshots_table = activeDoc.Snapshots;
+         string[] snapshots_table_names = snapshots_table.Names;
+         snapshotsnames_collection = snapshots_table_names;
+     }
+
+     if(getsnapshots)
+     {
+         foreach(string snapsshot_name in snapshotsnames_collection)
+         { 
+             snapshots_filename = filepath + "\\" + snapsshot_name + filetype;
+             Rhino.RhinoApp.RunScript(String.Format("-Snapshots {0} {1} enterend", "R",snapsshot_name), true);
+             Rhino.RhinoApp.RunScript(String.Format("-ViewCaptureToFile {0}", snapshots_filename), true);
+         }
+     }
+    }
+}
