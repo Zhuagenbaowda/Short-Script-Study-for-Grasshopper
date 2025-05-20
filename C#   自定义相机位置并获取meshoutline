@@ -1,0 +1,61 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.IO;
+using System.Linq;
+using System.Data;
+using System.Drawing;
+using System.Reflection;
+using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Linq;
+using System.Runtime.InteropServices;
+
+using Rhino;
+using Rhino.Geometry;
+using Rhino.DocObjects;
+using Rhino.Collections;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	Point3d camera_location,
+	Point3d camera_direction,
+	double camera_lens,
+	double degree,
+	Mesh mesh,
+	bool is_on,
+	ref object points,
+	ref object meshoutlines)
+    {
+         if(is_on)
+         {
+             Rhino.Display.RhinoViewport view = RhinoDocument.Views.ActiveView.ActiveViewport;
+             view.SetCameraLocation(camera_location, false);
+             Vector3d vec_of_view = camera_direction - camera_location;
+             view.SetCameraDirection(vec_of_view, false);
+             view.Camera35mmLensLength = camera_lens;
+             Vector3d cz = view.CameraZ;
+             double x = degree / 180 * Math.PI;
+             cz.Rotate(degree / x, view.CameraY);
+             view.Rotate(x, view.CameraZ, view.CameraLocation);
+             points = view.GetNearRect();
+             meshoutlines = mesh.GetOutlines(view);
+             
+
+
+
+
+            
+
+
+         }
+    }
+}
