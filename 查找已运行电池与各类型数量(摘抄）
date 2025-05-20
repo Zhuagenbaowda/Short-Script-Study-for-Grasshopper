@@ -1,0 +1,213 @@
+#region Usings
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{  
+    private string formatted;
+
+    private void CheckCanvas()
+    {
+        bool note = false;
+        var ghdoc = Instances.ActiveCanvas.Document;
+
+        foreach (var obj in ghdoc.Objects)
+        {
+            if (obj is GH_Panel panel && panel.NickName == "All Components Used")
+            {
+                panel.UserText = AnalyzeActiveGhDoc();
+                panel.ExpireSolution(true);
+                note = true;
+                break;
+            }
+        }
+
+        if (!note)
+        {
+            MakeCompsPanel();
+        }
+    }
+
+    private void CheckCanvas2()
+    {
+        bool note2 = false;
+        var ghdoc = Instances.ActiveCanvas.Document;
+
+        foreach (var obj in ghdoc.Objects)
+        {
+            if (obj is GH_Panel panel && panel.NickName == "PlugIns Used")
+            {
+                panel.UserText = formatted;
+                panel.ExpireSolution(true);
+                note2 = true;
+                break;
+            }
+        }
+
+        if (!note2)
+        {
+            MakePlugInsPanel();
+        }
+    }
+
+    private void MakeCompsPanel()
+    {
+        var panel = new GH_Panel();
+        panel.Name = "All Components Used";
+        panel.UserText = AnalyzeActiveGhDoc();
+        panel.Properties.Colour = Color.LightPink;
+        panel.Properties.Font = new Font("Trebuchet MS", 10);
+        panel.Properties.Multiline = false;
+        panel.CreateAttributes();
+        Instances.ActiveCanvas.Document.AddObject(panel, false, Instances.ActiveCanvas.Document.ObjectCount+1);
+        panel.Attributes.Pivot = new PointF(-345, 0);
+        panel.Attributes.Bounds = new RectangleF(-330, 0, 330, 450);
+        
+    }
+
+    private void MakePlugInsPanel()
+    {
+        var panel = new GH_Panel();
+        panel.Name = "PlugIns Used";
+        panel.UserText = formatted;
+        panel.Properties.Colour = Color.HotPink;
+        panel.Properties.Font = new Font("Trebuchet MS", 10);
+        panel.Properties.Multiline = false;
+        panel.CreateAttributes();
+        Instances.ActiveCanvas.Document.AddObject(panel, false,Instances.ActiveCanvas.Document.ObjectCount+1);
+        panel.Attributes.Pivot = new PointF(-690, 0);
+        panel.Attributes.Bounds = new RectangleF(-330, 0, 330, 150);
+        
+    }
+
+   /* private Tuple<Dictionary<Guid, GH_AssemblyInfo>, Dictionary<Guid, GH_AssemblyInfo>> Libraries()
+    {
+        var coreLibraries = new Dictionary<Guid, GH_AssemblyInfo>();
+        var addonLibraries = new Dictionary<Guid, GH_AssemblyInfo>();
+        var server = Instances.ComponentServer;
+
+        foreach (var obj in Instances.ActiveCanvas.Document.Objects)
+        {
+            if (obj is IGH_Component)
+            {
+                var component = obj as IGH_Component;
+                var objId = obj.ComponentGuid;
+
+                if (objId != Guid.Empty && !coreLibraries.ContainsKey(objId) && !addonLibraries.ContainsKey(objId))
+                {
+                    var lib = server.FindAssemblyByObject(obj);
+                    if (lib != null)
+                    {
+                        if (lib.IsCoreLibrary)
+                            coreLibraries.Add(lib.Id, lib);
+                        else
+                            addonLibraries.Add(lib.Id, lib);
+                    }
+                }
+            }
+        }
+
+        return Tuple.Create(coreLibraries, addonLibraries);
+    }*/
+     public (Dictionary<Guid, GH_AssemblyInfo>, Dictionary<Guid, GH_AssemblyInfo>) Libraries()
+    {
+        Dictionary<Guid, GH_AssemblyInfo> coreLibraries = new Dictionary<Guid, GH_AssemblyInfo>();
+        Dictionary<Guid, GH_AssemblyInfo> addonLibraries = new Dictionary<Guid, GH_AssemblyInfo>();
+        Dictionary<Guid, string> objids = new Dictionary<Guid, string>();
+
+        var server = Grasshopper.Instances.ComponentServer;
+        foreach (var obj in GrasshopperDocument.Objects)
+        {
+            var objId = obj.ComponentGuid;
+            if (objids.ContainsKey(objId)) continue;
+            objids[objId] = "";
+
+            var lib = server.FindAssemblyByObject(obj);
+            if (lib == null) continue;
+            if (coreLibraries.ContainsKey(lib.Id) || addonLibraries.ContainsKey(lib.Id)) continue;
+
+            if (lib.IsCoreLibrary)
+            {
+                coreLibraries[lib.Id] = lib;
+            }
+            else
+            {
+                addonLibraries[lib.Id] = lib;
+            }
+        }
+        return (coreLibraries, addonLibraries);
+    }
+
+    private string AnalyzeActiveGhDoc()
+    {
+        int compCount = 0;
+        var dictComponents = new Dictionary<string, Dictionary<string, Dictionary<string, int>>>();
+
+        foreach (var obj in Instances.ActiveCanvas.Document.Objects)
+        {
+            if (obj is IGH_Component)
+            {
+                var component = obj as IGH_Component;
+                var category = component.Category;
+                var subCategory = component.SubCategory;
+                var name = component.Name;
+
+                if (!dictComponents.ContainsKey(category))
+                    dictComponents[category] = new Dictionary<string, Dictionary<string, int>>();
+
+                if (!dictComponents[category].ContainsKey(subCategory))
+                    dictComponents[category][subCategory] = new Dictionary<string, int>();
+
+                if (!dictComponents[category][subCategory].ContainsKey(name))
+                    dictComponents[category][subCategory][name] = 0;
+
+                dictComponents[category][subCategory][name]++;
+                compCount++;
+            }
+        }
+
+        string username = Environment.UserName;
+        string panelText = $"{DateTime.Now.ToString("DATE- yyyy.MM.dd TIME- HH:mmh")}\n";
+        panelText += $"Last saved by - {username}\n";
+        panelText += $"Total Components - {compCount}\n";
+
+        foreach (var category in dictComponents)
+        {
+            foreach (var subCategory in category.Value)
+            {
+                foreach (var comp in subCategory.Value)
+                {
+                    panelText += $"{category.Key}.{subCategory.Key}.{comp.Key} - {comp.Value}\n";
+                }
+            }
+        }
+
+        return panelText;
+    }
+    private void RunScript(bool x, ref object a)
+    {
+        if (x)
+        {
+            var coreLibraries = Libraries().Item1;
+            var addonLibraries = Libraries().Item2;
+
+            List<string> adds = new List<string>();
+            foreach (var lib in addonLibraries.Values)
+            {
+                if (!string.IsNullOrEmpty(lib.Name))
+                    adds.Add($"{lib.Name} {lib.Version}");
+            }
+
+            formatted = string.Join("\n", adds);
+
+            CheckCanvas();
+            CheckCanvas2();
+        }
+    }
+}
