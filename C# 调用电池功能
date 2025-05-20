@@ -1,0 +1,36 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	string x,
+	int y,
+	int z,
+	ref object a,
+	ref object b,
+	ref object c)
+    {
+        var qwe = Rhino.NodeInCode.Components.FindComponent(x);
+
+        var qwe_function = (System.Func<object, object, object>) qwe.Delegate;
+
+        a = qwe_function(y,z);
+        b = qwe;
+        c = qwe_function;
+    }
+}
