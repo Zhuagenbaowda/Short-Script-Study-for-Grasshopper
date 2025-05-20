@@ -1,0 +1,70 @@
+//C# 连接后查找GUID并更改Genepool结果
+（查找Method  和 Property，
+得到Property的值，修改method参数）
+
+//暂未解决持续运行问题
+（使用foreach遍历？使用if决定是否运行？）
+
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	List<object> genepool,
+	List<double> values,
+	int count,
+	int decimals,
+	double min,
+	double max,
+	ref object a,
+	ref object b,
+	ref object c)
+    {
+     Guid[] genepool_id = Component.Params.Input[0].Sources.Select(param => param.Attributes.GetTopLevel.DocObject.InstanceGuid).ToArray();;
+     Guid genepool_id1 = genepool_id[0];
+     
+     var docObj = GrasshopperDocument.FindObject(genepool_id1, true);
+
+     a = docObj.GetType().GetMethods();
+     b = docObj.GetType().GetProperties();
+     c = docObj.GetType().GetProperty("Count").GetValue(docObj,null);
+
+     var method_decimals = docObj.GetType().GetMethod("set_Decimals");
+     method_decimals.Invoke(docObj, new object[]{decimals});
+
+     var method_count = docObj.GetType().GetMethod("set_Count");
+     method_count.Invoke(docObj, new object[]{count});
+
+     var method_maximum = docObj.GetType().GetMethod("set_Maximum");
+     method_maximum.Invoke(docObj, new object[]{Convert.ToDecimal(max)});
+
+     var method_minimum = docObj.GetType().GetMethod("set_Minimum");
+     method_minimum.Invoke(docObj, new object[]{Convert.ToDecimal(min)});
+
+     var method_values = docObj.GetType().GetMethod("set_Value");
+     for(var i = 0;i < values.Count;i++)
+     {
+         method_values.Invoke(docObj, new object[]{i, Convert.ToDecimal(values[i])});
+     }
+
+     docObj.ExpireSolution(true);
+
+     //var method_randomize = docObj.GetType().GetMethod("Randomize");
+     //method_randomize.Invoke(docObj, new object[]{1});
+    }
+}
