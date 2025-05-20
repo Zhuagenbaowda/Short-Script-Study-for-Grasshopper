@@ -1,0 +1,75 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+ public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	Brep surface1,
+	int edge_index1,
+	int sur_con1,
+	bool flip_sur1,
+	Brep surface2,
+	int edge_index2,
+	int sur_con2,
+	bool flip_sur2,
+	ref object curves,
+	ref object blend_srf)
+    {
+       BrepEdge brepedge1 = surface1.Edges[edge_index1];
+       BrepFace brepface1;
+       if(brepedge1.Valence == EdgeAdjacency.Naked)
+       {
+        int brepface_index1 = brepedge1.AdjacentFaces()[0];
+        brepface1 = surface1.Faces[brepface_index1];
+       }
+       else
+       brepface1 = null;
+
+       BrepEdge brepedge2 = surface2.Edges[edge_index2];
+       BrepFace brepface2;
+       if(brepedge2.Valence == EdgeAdjacency.Naked)
+       {
+        int brepface_index2 = brepedge2.AdjacentFaces()[0];
+        brepface2 = surface2.Faces[brepface_index2];
+       }
+       else
+       brepface2 = null;
+
+       Brep[] blend_srf1 = null;
+       
+       if (brepface1 != null && brepface2 != null)
+       {
+        blend_srf1 = Brep.CreateBlendSurface(
+        brepface1,
+        brepedge1,
+        brepedge1.Domain,
+        flip_sur1,
+        (BlendContinuity) sur_con1,
+        brepface2,
+        brepedge2,
+        brepedge2.Domain,
+        flip_sur2,
+        (BlendContinuity) sur_con2);
+       }
+
+       List<Curve> blendcurves1 = new List<Curve>();
+       blendcurves1.Add(brepedge1);
+       blendcurves1.Add(brepedge2);
+       curves = blendcurves1;
+       blend_srf = blend_srf1;
+    }
+}
