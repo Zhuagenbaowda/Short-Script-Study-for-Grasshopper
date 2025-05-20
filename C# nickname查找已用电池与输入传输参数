@@ -1,0 +1,72 @@
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+using System.Linq;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	string nickname,
+	int index,
+	double x,
+	ref object a,
+	ref object b,
+	ref object c,
+	ref object d,
+	ref object e)
+    {
+        var doc = this.Component.OnPingDocument();
+        var objs = doc.Objects;
+        foreach (var obj in objs) 
+        {
+            var obj_nickname1 = obj.NickName;
+            if (obj_nickname1 == nickname)
+            {
+                a = obj;
+                break;
+            } 
+        }
+         
+         var ghdoc = Instances.ActiveCanvas.Document;
+         var ghobjs = ghdoc.Objects;
+         foreach (var obj in ghobjs) 
+        {
+            var obj_nickname2 = obj.NickName;
+            if (obj_nickname2 == nickname)
+            {
+                b = obj;
+                break;
+            } 
+        }
+         
+         GH_Component com_b = (GH_Component)b;
+         var ip_1 = com_b.Params.Input[index].VolatileData;
+         c = ip_1;
+
+         var method_1 = com_b.Params.Input[index].GetType().GetMethods();
+         d = method_1;
+
+         var method_2 = com_b.GetType().GetMethods();
+         e = method_2;
+
+         if(x != null)
+         {
+         com_b.Params.Input[1].VolatileData.Clear();
+         com_b.Params.Input[1].AddVolatileData(new GH_Path(0), 0, x);
+         }
+
+         com_b.ExpireSolution(true);
+    }
+}
