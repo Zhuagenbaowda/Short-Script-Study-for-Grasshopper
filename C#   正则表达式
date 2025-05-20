@@ -1,0 +1,100 @@
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text.RegularExpressions;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(string txt, string type, ref object a)
+    {
+     string str1 = "";
+     
+     switch (type)
+     {
+     case "a1":
+     str1 = @"\d+";
+     break;
+
+     case "a2":
+     str1 = @"^\d+";
+     break;
+
+     case "a3":
+     str1 = @"\B\d+\B";
+     break;
+
+     case "a4":
+     str1 = @"\d+$";
+     break;
+
+     case "a5":
+     str1 = @"^\d+$";
+     break;
+
+     case "b1":
+     str1 = @"[A-Za-z]+";
+     break;
+
+     case "b2":
+     str1 = @"^[A-Za-z]+";
+     break;
+
+     case "b3":
+     str1 = @"\B[A-Za-z]+\B";
+     break;
+
+     case "b4":
+     str1 = @"[A-Za-z]+$";
+     break;
+
+     case "b5":
+     str1 = @"^[A-Za-z]+$";
+     break;
+
+     case "c1":
+     str1 = @"[\u4e00-\u9fa5]+";
+     break;
+
+     case "c2":
+     str1 = @"^[\u4e00-\u9fa5]+";
+     break;
+
+     case "c3":
+     str1 = @"\B[\u4e00-\u9fa5]+\B";
+     break;
+
+     case "c4":
+     str1 = @"[\u4e00-\u9fa5]+$";
+     break;
+
+     case "c5":
+     str1 = @"^[\u4e00-\u9fa5]+$";
+     break;
+     }
+     
+     //正则表达式用法参考：  https://www.runoob.com/csharp/csharp-regular-expressions.html
+     
+     MatchCollection matches = Regex.Matches(txt, str1);
+     List<string> stringList = new List<string>();
+     
+     foreach (Match match in matches)
+     {
+         stringList.Add(match.Value);
+     }
+
+     a = stringList;
+    }
+}
