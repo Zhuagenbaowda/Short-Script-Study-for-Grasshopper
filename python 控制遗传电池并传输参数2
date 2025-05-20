@@ -1,0 +1,19 @@
+from System import Convert
+
+if genePool and values:
+    if values[0]:
+        gp = ghenv.Component.Params.Input[0].Sources[0]
+        if (
+            gp.Decimals != decimals
+            or Convert.ToSingle(gp.Maximum) != interval.Max
+            or Convert.ToSingle(gp.Minimum) != interval.Min
+            or gp.Count != len(values)
+        ):
+            gp.Decimals = decimals
+            gp.Maximum = Convert.ToDecimal(interval.Max)
+            gp.Minimum = Convert.ToDecimal(interval.Min)
+            gp.Count = len(values)
+            for i in range(gp.Count):
+                gp.__setitem__(i, Convert.ToDecimal(values[i]))
+            gp.ExpireSolution(True)
+            gp.Randomize(True)
