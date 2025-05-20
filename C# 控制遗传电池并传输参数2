@@ -1,0 +1,65 @@
+//C# nickname查找并更改Genepool结果
+
+//（使用foreach遍历，改变数据后运行一次）
+
+// Grasshopper Script Instance
+#region Usings
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
+using Rhino;
+using Rhino.Geometry;
+
+using Grasshopper;
+using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
+#endregion
+
+public class Script_Instance : GH_ScriptInstance
+{
+    private void RunScript(
+	string nickname,
+	List<object> values,
+	int count,
+	int decimals,
+	double min,
+	double max)
+    {
+     var doc = this.Component.OnPingDocument();
+        var objs = doc.Objects;
+        foreach (var docObj in objs) 
+        {
+         var objNickname = docObj.NickName;
+         if (objNickname == nickname)
+         {
+             var method_decimals = docObj.GetType().GetMethod("set_Decimals");
+             method_decimals.Invoke(docObj, new object[]{decimals});
+
+             var method_count = docObj.GetType().GetMethod("set_Count");
+             method_count.Invoke(docObj, new object[]{count});
+
+             var method_maximum = docObj.GetType().GetMethod("set_Maximum");
+             method_maximum.Invoke(docObj, new object[]{Convert.ToDecimal(max)});
+
+             var method_minimum = docObj.GetType().GetMethod("set_Minimum");
+             method_minimum.Invoke(docObj, new object[]{Convert.ToDecimal(min)});
+
+             var method_randomize = docObj.GetType().GetMethod("Randomize");
+             method_randomize.Invoke(docObj, new object[]{1});
+
+             var method_values = docObj.GetType().GetMethod("set_Value");
+             for(var i = 0;i < values.Count;i++)
+             {
+             method_values.Invoke(docObj, new object[]{i, Convert.ToDecimal(values[i])});
+             }
+             
+             docObj.ExpireSolution(true);
+             
+         }
+        }
+    }
+}
